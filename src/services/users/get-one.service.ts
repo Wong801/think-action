@@ -40,8 +40,8 @@ export default class GetOneUserService {
           goalsPerformance: 1,
           isAuthenticatedUser: 1,
           isSupporting: 1,
-          notificationCount: isAuthenticatedUser ? 1 : 0,
-          requestCount: isAuthenticatedUser ? 1 : 0,
+          ...(isAuthenticatedUser && {notificationCount: 1}),
+          ...(isAuthenticatedUser && {requestCount: 1}),
         },
       },
     ];

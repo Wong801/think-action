@@ -24,13 +24,22 @@ export default class GetAllCommentService {
         },
       },
       {
+        $addFields: {
+          userInfo: {
+            $arrayElemAt: ['$userInfo', 0],
+          },
+        },
+      },
+      {
         $project: {
           _id: 1,
           postId: 1,
           userId: 1,
-          'userInfo._id': 1,
-          'userInfo.username': 1,
-          'userInfo.photo': 1,
+          userInfo: {
+            _id: 1,
+            username: 1,
+            photo: 1,
+          },
           message: 1,
           replyCount: 1,
           type: 1,

@@ -16,13 +16,6 @@ export default class CreateWeeklyGoalsService {
   }
 
   public async handle(data: DocInterface, authUserId: string) {
-    
-    const photos = data.photos;
-    const uploader = new Uploader(data.photos);
-    if (photos) {
-      data.photo = uploader.move();
-    }
-
     const postEntity = new PostEntity({
       userId: new ObjectId(authUserId),
       categoryResolutionId: new ObjectId(data.categoryResolutionId),

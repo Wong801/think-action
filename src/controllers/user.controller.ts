@@ -163,7 +163,16 @@ export default class UserController {
 
       const result = await this.getAllSupporterService.handle(id, authUserId, page, limit, username || '');
 
-      return res.status(200).json({ status: 'success', limit, page, results: result.length, data: result });
+      return res.status(200).json({ 
+        status: 'success', 
+        results: result.total, 
+        limit: result.limit, 
+        page: result.page, 
+        data: await Promise.all(result.data.map(async (i: any) => ({
+          ...i,
+          photo: await this.getImageService.handle(i.photo)
+        })))
+      });
     } catch (e) {
       next(e);
     }

@@ -6,6 +6,8 @@ import DeleteCommentService from '../services/comments/delete.service';
 import GetAllCommentService from '../services/comments/get-all.service';
 import GetAllReplyService from '../services/comments/get-all-reply.service';
 import dotenv from 'dotenv';
+import GetImageService from '../services/images/get-image.service';
+import { userInfo } from 'os';
 
 dotenv.config();
 
@@ -16,6 +18,7 @@ export default class CommentController {
   private deleteCommentService: DeleteCommentService;
   private getAllCommentService: GetAllCommentService;
   private getAllReplyService: GetAllReplyService;
+  private getImageService: GetImageService
 
   constructor(
     getAllCommentService: GetAllCommentService,
@@ -23,7 +26,8 @@ export default class CommentController {
     createCommentService: CreateCommentService,
     createReplyCommentService: CreateReplyCommentService,
     updateCommentService: UpdateCommentService,
-    deleteCommentService: DeleteCommentService
+    deleteCommentService: DeleteCommentService,
+    getImageService: GetImageService
   ) {
     this.createCommentService = createCommentService;
     this.createReplyCommentService = createReplyCommentService;
@@ -31,6 +35,7 @@ export default class CommentController {
     this.deleteCommentService = deleteCommentService;
     this.getAllCommentService = getAllCommentService;
     this.getAllReplyService = getAllReplyService;
+    this.getImageService = getImageService
   }
 
   public async getAllComment(req: any, res: Response, next: NextFunction) {
@@ -39,7 +44,15 @@ export default class CommentController {
 
       const result = await this.getAllCommentService.handle(postId);
 
-      return res.status(200).json({ status: 'success', data: result });
+      const mapped = await Promise.all(result.map(async (comment) => ({
+        ...comment,
+        userInfo: {
+          ...comment.userInfo,
+          photo: comment.userInfo.photo = await this.getImageService.handle(comment.userInfo.photo)
+        }
+      })))
+
+      return res.status(200).json({ status: 'success', data: mapped });
     } catch (e) {
       next(e);
     }
@@ -51,7 +64,15 @@ export default class CommentController {
 
       const result = await this.getAllReplyService.handle(id);
 
-      return res.status(200).json({ status: 'success', replyCount: result.length, data: result });
+      const mapped = await Promise.all(result.map(async (comment) => ({
+        ...comment,
+        userInfo: {
+          ...comment.userInfo,
+          photo: comment.userInfo.photo = await this.getImageService.handle(comment.userInfo.photo)
+        }
+      })))
+
+      return res.status(200).json({ status: 'success', replyCount: result.length, data: mapped });
     } catch (e) {
       next(e);
     }

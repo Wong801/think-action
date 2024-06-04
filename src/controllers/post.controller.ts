@@ -16,251 +16,349 @@ import dotenv from 'dotenv';
 import GetYearReportService from '../services/posts/get-year-report.service';
 import GetImageService from '../services/images/get-image.service';
 import { PostInterface } from '../entities/posts.entity';
+import GetPerformanceService from '../services/posts/get-performance.service';
 
 dotenv.config();
 
 export default class PostController {
-  private createResolutionService: CreateResolutionService;
-  private createWeeklyGoalsService: CreateWeeklyGoalsService;
-  private createCompleteGoalsService: CreateCompleteGoalsService;
-  private updateResolutionsService: UpdateResolutionsService;
-  private updateWeeklyGoalsService: UpdateWeeklyGoalsService;
-  private updateCompleteGoalsService: UpdateCompleteGoalsService;
-  private likePostService: LikePostService;
-  private unlikePostService: UnlikePostService;
-  private deletePostService: DeletePostService;
-  private getAllPostService: GetAllPostService;
-  private getOnePostService: GetOnePostService;
-  private getAllLikePostService: GetAllLikePostService;
-  private getMonthlyReportService: GetMonthlyReportService;
-  private getYearReportService: GetYearReportService;
-  private getImageService: GetImageService
+	private createResolutionService: CreateResolutionService;
+	private createWeeklyGoalsService: CreateWeeklyGoalsService;
+	private createCompleteGoalsService: CreateCompleteGoalsService;
+	private updateResolutionsService: UpdateResolutionsService;
+	private updateWeeklyGoalsService: UpdateWeeklyGoalsService;
+	private updateCompleteGoalsService: UpdateCompleteGoalsService;
+	private likePostService: LikePostService;
+	private unlikePostService: UnlikePostService;
+	private deletePostService: DeletePostService;
+	private getAllPostService: GetAllPostService;
+	private getOnePostService: GetOnePostService;
+	private getAllLikePostService: GetAllLikePostService;
+	private getMonthlyReportService: GetMonthlyReportService;
+	private getYearReportService: GetYearReportService;
+	private getPerformancePostService: GetPerformanceService;
+	private getImageService: GetImageService;
 
-  constructor(
-    getAllPostService: GetAllPostService,
-    getOnePostService: GetOnePostService,
-    getAllLikePostService: GetAllLikePostService,
-    createResolutionService: CreateResolutionService,
-    createWeeklyGoalsService: CreateWeeklyGoalsService,
-    createCompleteGoalsService: CreateCompleteGoalsService,
-    updateResolutionsService: UpdateResolutionsService,
-    updateWeeklyGoalsService: UpdateWeeklyGoalsService,
-    updateCompleteGoalsService: UpdateCompleteGoalsService,
-    likePostService: LikePostService,
-    unlikePostService: UnlikePostService,
-    getMonthlyReportService: GetMonthlyReportService,
-    getYearReportService: GetYearReportService,
-    deletePostService: DeletePostService,
-    getImageService: GetImageService
-  ) {
-    this.createResolutionService = createResolutionService;
-    this.createWeeklyGoalsService = createWeeklyGoalsService;
-    this.createCompleteGoalsService = createCompleteGoalsService;
-    this.updateResolutionsService = updateResolutionsService;
-    this.updateWeeklyGoalsService = updateWeeklyGoalsService;
-    this.updateCompleteGoalsService = updateCompleteGoalsService;
-    this.likePostService = likePostService;
-    this.unlikePostService = unlikePostService;
-    this.deletePostService = deletePostService;
-    this.getAllPostService = getAllPostService;
-    this.getOnePostService = getOnePostService;
-    this.getAllLikePostService = getAllLikePostService;
-    this.getMonthlyReportService = getMonthlyReportService;
-    this.getYearReportService = getYearReportService;
-    this.getImageService = getImageService
-  }
+	constructor(
+		getAllPostService: GetAllPostService,
+		getOnePostService: GetOnePostService,
+		getAllLikePostService: GetAllLikePostService,
+		getPerformancePostService: GetPerformanceService,
+		createResolutionService: CreateResolutionService,
+		createWeeklyGoalsService: CreateWeeklyGoalsService,
+		createCompleteGoalsService: CreateCompleteGoalsService,
+		updateResolutionsService: UpdateResolutionsService,
+		updateWeeklyGoalsService: UpdateWeeklyGoalsService,
+		updateCompleteGoalsService: UpdateCompleteGoalsService,
+		likePostService: LikePostService,
+		unlikePostService: UnlikePostService,
+		getMonthlyReportService: GetMonthlyReportService,
+		getYearReportService: GetYearReportService,
+		deletePostService: DeletePostService,
+		getImageService: GetImageService,
+	) {
+		this.createResolutionService = createResolutionService;
+		this.createWeeklyGoalsService = createWeeklyGoalsService;
+		this.createCompleteGoalsService = createCompleteGoalsService;
+		this.updateResolutionsService = updateResolutionsService;
+		this.updateWeeklyGoalsService = updateWeeklyGoalsService;
+		this.updateCompleteGoalsService = updateCompleteGoalsService;
+		this.likePostService = likePostService;
+		this.unlikePostService = unlikePostService;
+		this.deletePostService = deletePostService;
+		this.getAllPostService = getAllPostService;
+		this.getOnePostService = getOnePostService;
+		this.getAllLikePostService = getAllLikePostService;
+		this.getMonthlyReportService = getMonthlyReportService;
+		this.getYearReportService = getYearReportService;
+		this.getPerformancePostService = getPerformancePostService;
+		this.getImageService = getImageService;
+	}
 
-  public async getAllPost(req: any, res: Response, next: NextFunction) {
-    try {
-      const authUserId = req.userData._id;
-      const result = await this.getAllPostService.handle(authUserId, req.query);
+	public async getAllPost(req: Request, res: Response, next: NextFunction) {
+		try {
+			const authUserId = req.userData._id;
 
-      result.data = await Promise.all(result.data.map(async (post: PostInterface) => ({
-        ...post,
-        photo: await Promise.all((post?.photo || []).map(async (img: string) => (await this.getImageService.handle(img)))),
-        categoryResolution: (post as Record<string, any>).userInfo.categoryResolution.find((cr: any) => cr._id === post.categoryResolutionId)?.name,
-        userInfo: {
-          ...(post as Record<string, any>).userInfo,
-          photo: (post as Record<string, any>).userInfo.photo ? await this.getImageService.handle((post as Record<string, any>).userInfo.photo) : ''
-        }
-      })))
+			const result = await this.getAllPostService.handle(authUserId, req.query);
 
-      return res.status(200).json({ status: 'success', data: result });
-    } catch (e) {
-      next(e);
-    }
-  }
+			result.data = await Promise.all(
+				result.data.map(async (post: PostInterface) => ({
+					...post,
+					photo: await Promise.all(
+						(post?.photo || []).map(
+							async (img: string) => await this.getImageService.handle(img),
+						),
+					),
+					categoryResolution: (
+						post as Record<string, any>
+					).userInfo.categoryResolution.find(
+						(cr: any) => cr._id === post.categoryResolutionId,
+					)?.name,
+					userInfo: {
+						...(post as Record<string, any>).userInfo,
+						photo: (post as Record<string, any>).userInfo.photo
+							? await this.getImageService.handle(
+									(post as Record<string, any>).userInfo.photo,
+							  )
+							: '',
+					},
+				})),
+			);
 
-  public async getOnePost(req: any, res: Response, next: NextFunction) {
-    try {
-      const { id } = req.params;
-      const authUserId = req.userData._id;
+			return res.status(200).json({ status: 'success', data: result });
+		} catch (e) {
+			next(e);
+		}
+	}
 
-      const result = await this.getOnePostService.handle(authUserId, id);
+	public async getOnePost(req: any, res: Response, next: NextFunction) {
+		try {
+			const { id } = req.params;
+			const authUserId = req.userData._id;
 
-      return res.status(200).json({ status: 'success', data: result });
-    } catch (e) {
-      next(e);
-    }
-  }
+			const result = await this.getOnePostService.handle(authUserId, id);
+			result.photo = await Promise.all(
+				result.photo.map(
+					async (img: string) => await this.getImageService.handle(img),
+				),
+			);
+			result.userInfo.photo = await this.getImageService.handle(
+				result.userInfo.photo,
+			);
 
-  public async getAllLikePost(req: any, res: Response, next: NextFunction) {
-    try {
-      const { id } = req.params;
-      const authUserId = req.userData._id;
+			return res.status(200).json({ status: 'success', data: result });
+		} catch (e) {
+			next(e);
+		}
+	}
 
-      const result = await this.getAllLikePostService.handle(id, authUserId);
+	public async getAllLikePost(req: any, res: Response, next: NextFunction) {
+		try {
+			const { id } = req.params;
+			const authUserId = req.userData._id;
 
-      return res.status(200).json({ status: 'success', limit: 10, page: 1, likeCount: result.length, data: result });
-    } catch (e) {
-      next(e);
-    }
-  }
+			const result = await this.getAllLikePostService.handle(id, authUserId);
 
-  public async createResolution(req: any, res: Response, next: NextFunction) {
-    try {
-      const authUserId = req.userData._id;
-      const data = req.body;
-      data.photos = req.files;
+			return res
+				.status(200)
+				.json({
+					status: 'success',
+					limit: 10,
+					page: 1,
+					likeCount: result.length,
+					data: result,
+				});
+		} catch (e) {
+			next(e);
+		}
+	}
 
-      const result = await this.createResolutionService.handle(data, authUserId);
+	public async getPerformanceReport(
+		req: Request,
+		res: Response,
+		next: NextFunction,
+	) {
+		try {
+			const result = await this.getPerformancePostService.handle(
+				req.params.userId,
+			);
 
-      return res.status(200).json({ status: 'success', data: result });
-    } catch (e) {
-      next(e);
-    }
-  }
+			return res.status(200).json({ status: 'success', data: result });
+		} catch (e) {
+			next(e);
+		}
+	}
 
-  public async createWeeklyGoals(req: any, res: Response, next: NextFunction) {
-    try {
-      const authUserId = req.userData._id;
-      const data = req.body;
-      data.photos = req.files;
-      
-      const result = await this.createWeeklyGoalsService.handle(data, authUserId);
+	public async createResolution(req: any, res: Response, next: NextFunction) {
+		try {
+			const authUserId = req.userData._id;
+			const data = req.body;
+			data.photos = req.files;
 
-      return res.status(200).json({ status: 'success', data: result });
-    } catch (e) {
-      next(e);
-    }
-  }
+			const result = await this.createResolutionService.handle(
+				data,
+				authUserId,
+			);
 
-  public async createCompleteGoals(req: any, res: Response, next: NextFunction) {
-    try {
-      const authUserId = req.userData._id;
-      const data = req.body;
-      data.photos = req.files;
+			return res.status(200).json({ status: 'success', data: result });
+		} catch (e) {
+			next(e);
+		}
+	}
 
-      const result = await this.createCompleteGoalsService.handle(data, authUserId);
+	public async createWeeklyGoals(req: any, res: Response, next: NextFunction) {
+		try {
+			const authUserId = req.userData._id;
+			const data = req.body;
+			data.photos = req.files;
 
-      return res.status(200).json({ status: 'success', data: result });
-    } catch (e) {
-      next(e);
-    }
-  }
+			const result = await this.createWeeklyGoalsService.handle(
+				data,
+				authUserId,
+			);
 
-  public async updateResolutions(req: any, res: Response, next: NextFunction) {
-    try {
-      const authUserId = req.userData._id;
-      const { id } = req.params;
+			return res.status(200).json({ status: 'success', data: result });
+		} catch (e) {
+			next(e);
+		}
+	}
 
-      const data = req.body;
-      data.photos = req.files;
-      
-      const result = await this.updateResolutionsService.handle(data, authUserId, id);
+	public async createCompleteGoals(
+		req: any,
+		res: Response,
+		next: NextFunction,
+	) {
+		try {
+			const authUserId = req.userData._id;
+			const data = req.body;
+			data.photos = req.files;
 
-      return res.status(200).json({ status: 'success', data: result });
-    } catch (e) {
-      next(e);
-    }
-  }
+			const result = await this.createCompleteGoalsService.handle(
+				data,
+				authUserId,
+			);
 
-  public async updateWeeklyGoals(req: any, res: Response, next: NextFunction) {
-    try {
-      const authUserId = req.userData._id;
-      const { id } = req.params;
+			return res.status(200).json({ status: 'success', data: result });
+		} catch (e) {
+			next(e);
+		}
+	}
 
-      const data = req.body;
-      data.photos = req.files;
-      
-      const result = await this.updateWeeklyGoalsService.handle(data, authUserId, id);
+	public async updateResolutions(req: any, res: Response, next: NextFunction) {
+		try {
+			const authUserId = req.userData._id;
+			const { id } = req.params;
 
-      return res.status(200).json({ status: 'success', data: result });
-    } catch (e) {
-      next(e);
-    }
-  }
+			const data = req.body;
+			data.photos = req.files;
 
-  public async updateCompleteGoals(req: any, res: Response, next: NextFunction) {
-    try {
-      const authUserId = req.userData._id;
-      const { id } = req.params;
+			const result = await this.updateResolutionsService.handle(
+				data,
+				authUserId,
+				id,
+			);
 
-      const result = await this.updateCompleteGoalsService.handle(req.body, authUserId, id);
+			return res.status(200).json({ status: 'success', data: result });
+		} catch (e) {
+			next(e);
+		}
+	}
 
-      return res.status(200).json({ status: 'success', data: result });
-    } catch (e) {
-      next(e);
-    }
-  }
+	public async updateWeeklyGoals(req: any, res: Response, next: NextFunction) {
+		try {
+			const authUserId = req.userData._id;
+			const { id } = req.params;
 
-  public async likePost(req: any, res: Response, next: NextFunction) {
-    try {
-      const authUserId = req.userData._id;
+			const data = req.body;
+			data.photos = req.files;
 
-      const result = await this.likePostService.handle(req.body, authUserId);
+			const result = await this.updateWeeklyGoalsService.handle(
+				data,
+				authUserId,
+				id,
+			);
 
-      return res.status(200).json({ status: 'success', message: 'Post liked successfully.', data: result });
-    } catch (e) {
-      next(e);
-    }
-  }
+			return res.status(200).json({ status: 'success', data: result });
+		} catch (e) {
+			next(e);
+		}
+	}
 
-  public async unlikePost(req: any, res: Response, next: NextFunction) {
-    try {
-      const authUserId = req.userData._id;
+	public async updateCompleteGoals(
+		req: any,
+		res: Response,
+		next: NextFunction,
+	) {
+		try {
+			const authUserId = req.userData._id;
+			const { id } = req.params;
 
-      const result = await this.unlikePostService.handle(req.body, authUserId);
+			const result = await this.updateCompleteGoalsService.handle(
+				req.body,
+				authUserId,
+				id,
+			);
 
-      return res.status(200).json({ status: 'success', message: 'Post unliked successfully.', data: result });
-    } catch (e) {
-      next(e);
-    }
-  }
+			return res.status(200).json({ status: 'success', data: result });
+		} catch (e) {
+			next(e);
+		}
+	}
 
-  public async getMonthlyReport(req: any, res: Response, next: NextFunction) {
-    try {
-      const authUserId = req.userData._id;
+	public async likePost(req: any, res: Response, next: NextFunction) {
+		try {
+			const authUserId = req.userData._id;
 
-      const result = await this.getMonthlyReportService.handle(req.query, authUserId);
+			const result = await this.likePostService.handle(req.body, authUserId);
 
-      return res.status(200).json({ status: 'success', data: result });
-    } catch (e) {
-      next(e);
-    }
-  }
+			return res
+				.status(200)
+				.json({
+					status: 'success',
+					message: 'Post liked successfully.',
+					data: result,
+				});
+		} catch (e) {
+			next(e);
+		}
+	}
 
-  public async getYearReport(req: any, res: Response, next: NextFunction) {
-    try {
-      const authUserId = req.userData._id;
+	public async unlikePost(req: any, res: Response, next: NextFunction) {
+		try {
+			const authUserId = req.userData._id;
 
-      const result = await this.getYearReportService.handle(req.query, authUserId);
+			const result = await this.unlikePostService.handle(req.body, authUserId);
 
-      return res.status(200).json({ status: 'success', data: result });
-    } catch (e) {
-      next(e);
-    }
-  }
+			return res
+				.status(200)
+				.json({
+					status: 'success',
+					message: 'Post unliked successfully.',
+					data: result,
+				});
+		} catch (e) {
+			next(e);
+		}
+	}
 
-  public async deletePost(req: any, res: Response, next: NextFunction) {
-    try {
-      const { id } = req.params;
+	public async getMonthlyReport(req: any, res: Response, next: NextFunction) {
+		try {
+			const authUserId = req.userData._id;
 
-      const result = await this.deletePostService.handle(id);
+			const result = await this.getMonthlyReportService.handle(
+				req.query,
+				authUserId,
+			);
 
-      return res.status(200).json({});
-    } catch (e) {
-      next(e);
-    }
-  }
+			return res.status(200).json({ status: 'success', data: result });
+		} catch (e) {
+			next(e);
+		}
+	}
+
+	public async getYearReport(req: any, res: Response, next: NextFunction) {
+		try {
+			const authUserId = req.userData._id;
+
+			const result = await this.getYearReportService.handle(
+				req.query,
+				authUserId,
+			);
+
+			return res.status(200).json({ status: 'success', data: result });
+		} catch (e) {
+			next(e);
+		}
+	}
+
+	public async deletePost(req: any, res: Response, next: NextFunction) {
+		try {
+			const { id } = req.params;
+
+			await this.deletePostService.handle(id);
+
+			return res.status(200).json({});
+		} catch (e) {
+			next(e);
+		}
+	}
 }

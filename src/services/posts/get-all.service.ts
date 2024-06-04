@@ -47,7 +47,6 @@ export default class GetAllPostService {
   pipeline.push({
     $addFields: {
       userInfo: { $arrayElemAt: ['$userInfo', 0] },
-      likedByCurrent: new ObjectId(authUserId),
     },
   });
 
@@ -61,7 +60,9 @@ export default class GetAllPostService {
       caption: 1,
       photo: 1,
       likeCount: 1,
-      likedByCurrent: 1,
+      likedByCurrent: {
+        $in: [new ObjectId(authUserId), '$like']
+      },
       commentCount: 1,
       dueDate: 1,
       createdDate: 1,
@@ -79,17 +80,6 @@ export default class GetAllPostService {
     },
   });
 
-  // $facet stage
-  pipeline.push({
-    $facet: {
-      metadata: [{ $count: 'totalCount' }],
-      data: [
-        { $skip: (Number(data.page) - 1) * Number(data.limit) },
-        { $limit: Number(data.limit) },
-      ],
-    },
-  });
-
   // Sorting logic
   if (data.sort && data.order) {
     const sortField = data.sort;
@@ -101,6 +91,17 @@ export default class GetAllPostService {
   } else {
     pipeline.push({ $sort: { createdDate: -1 } });
   }
+
+  // $facet stage
+  pipeline.push({
+    $facet: {
+      metadata: [{ $count: 'totalCount' }],
+      data: [
+        { $skip: (Number(data.page) - 1) * Number(data.limit) },
+        { $limit: Number(data.limit) },
+      ],
+    },
+  });
 
   // Execute the pipeline
   const allPost = await this.postRepository.aggregate(pipeline);

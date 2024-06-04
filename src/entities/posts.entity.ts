@@ -77,11 +77,11 @@ export class PostEntity {
       errors.likeCount = 'Like count must be a number.';
     }
 
-    if (this.post.dueDate && !(this.post.dueDate instanceof Date)) {
+    if (this.post.dueDate && (!(this.post.dueDate instanceof Date) && typeof this.post.dueDate !== 'string')) {
       errors.dueDate = 'Due date must be a Date object.';
     }
 
-    if (this.post.updatedDate && !(this.post.updatedDate instanceof Date)) {
+    if (this.post.updatedDate && (!(this.post.updatedDate instanceof Date) && typeof this.post.updatedDate !== 'string')) {
       errors.updatedDate = 'Updated date must be a Date object.';
     }
 

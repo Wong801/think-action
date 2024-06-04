@@ -19,6 +19,7 @@ import GetYearReportService from '../../services/posts/get-year-report.service';
 import multer from 'multer';
 import ImageEntity from '../../entities/image.entity';
 import GetImageService from '../../services/images/get-image.service';
+import GetPerformanceService from '../../services/posts/get-performance.service';
 
 const upload = multer();
 const router = Router();
@@ -30,6 +31,7 @@ const postRepository = new PostRepository();
 const getAllPost = new GetAllPostService(postRepository);
 const getOnePost = new GetOnePostService(postRepository);
 const getAllLikePost = new GetAllLikePostService(postRepository);
+const getPerformanceReport = new GetPerformanceService(postRepository)
 const createResolution = new CreateResolutionService(postRepository);
 const createWeeklyGoals = new CreateWeeklyGoalsService(postRepository);
 const createCompleteGoals = new CreateCompleteGoalsService(postRepository);
@@ -45,6 +47,7 @@ const postController = new PostController(
   getAllPost,
   getOnePost,
   getAllLikePost,
+  getPerformanceReport,
   createResolution,
   createWeeklyGoals,
   createCompleteGoals,
@@ -65,9 +68,7 @@ router.get('/monthly', verifyUser, (req, res, next) => postController.getMonthly
 
 router.get('/yearly', verifyUser, (req, res, next) => postController.getYearReport(req, res, next));
 
-router.get('/:id', verifyUser, (req, res, next) => postController.getOnePost(req, res, next));
-
-router.get('/:id/like', verifyUser, (req, res, next) => postController.getAllLikePost(req, res, next));
+router.get('/performance/:userId', verifyUser, (req, res, next) => postController.getPerformanceReport(req, res, next));
 
 router.post('/resolutions', verifyUser, upload.array('photo[]'), (req, res, next) => postController.createResolution(req, res, next));
 
@@ -78,6 +79,10 @@ router.post('/completeGoals', verifyUser, upload.array('photo[]'), (req, res, ne
 router.post('/like', verifyUser, (req, res, next) => postController.likePost(req, res, next));
 
 router.post('/unlike', verifyUser, (req, res, next) => postController.unlikePost(req, res, next));
+
+router.get('/:id', verifyUser, (req, res, next) => postController.getOnePost(req, res, next));
+
+router.get('/:id/like', verifyUser, (req, res, next) => postController.getAllLikePost(req, res, next));
 
 router.patch('/:id/resolutions', verifyUser, upload.array('photo[]'), (req, res, next) => postController.updateResolutions(req, res, next));
 

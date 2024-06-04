@@ -14,8 +14,7 @@ export default class GetAllSupporterService {
     const pipeline = [
       { $match: { _id: new ObjectId(id), username: { $regex: username } } },
       { $unwind: '$supporter' },
-      { $skip: +skip },
-      { $limit: +limit },
+      
       { $addFields: { isAuthenticatedUser: { $eq: [new ObjectId(authUserId), '$_id'] } } },
       {
         $lookup: {
@@ -50,13 +49,27 @@ export default class GetAllSupporterService {
           isSupporting: 1,
         },
       },
+      {
+        $facet: {
+          metadata: [{ $count: 'totalCount' }],
+          data: [
+            { $skip: +skip },
+            { $limit: +limit },
+          ]
+        }
+      }
     ];
 
-    const data = await this.userRepository.aggregate(pipeline);
+    const result = await this.userRepository.aggregate(pipeline);
 
-    return data.map((supporter) => ({
-      ...supporter,
-      isAuthenticatedUser: supporter._id.equals(new ObjectId(authUserId)),
-    }));
+    return {
+      total: result[0].metadata[0].totalCount,
+      page,
+      limit,
+      data: result[0].data.map((supporter: Record<string, any>) => ({
+        ...supporter,
+        isAuthenticatedUser: supporter._id.equals(new ObjectId(authUserId)),
+      }))
+    };
   }
 }
