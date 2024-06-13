@@ -70,9 +70,9 @@ router.get('/yearly', verifyUser, (req, res, next) => postController.getYearRepo
 
 router.get('/performance/:userId', verifyUser, (req, res, next) => postController.getPerformanceReport(req, res, next));
 
-router.post('/resolutions', verifyUser, upload.array('photo[]'), (req, res, next) => postController.createResolution(req, res, next));
+router.post('/resolutions', verifyUser, (req, res, next) => postController.createResolution(req, res, next));
 
-router.post('/weeklyGoals', verifyUser, upload.array('photo[]'), (req, res, next) => postController.createWeeklyGoals(req, res, next));
+router.post('/weeklyGoals', verifyUser, (req, res, next) => postController.createWeeklyGoals(req, res, next));
 
 router.post('/completeGoals', verifyUser, upload.array('photo[]'), (req, res, next) => postController.createCompleteGoals(req, res, next));
 

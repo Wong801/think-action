@@ -168,11 +168,10 @@ export default class PostController {
 		}
 	}
 
-	public async createResolution(req: any, res: Response, next: NextFunction) {
+	public async createResolution(req: Request, res: Response, next: NextFunction) {
 		try {
 			const authUserId = req.userData._id;
 			const data = req.body;
-			data.photos = req.files;
 
 			const result = await this.createResolutionService.handle(
 				data,
@@ -185,7 +184,7 @@ export default class PostController {
 		}
 	}
 
-	public async createWeeklyGoals(req: any, res: Response, next: NextFunction) {
+	public async createWeeklyGoals(req: Request, res: Response, next: NextFunction) {
 		try {
 			const authUserId = req.userData._id;
 			const data = req.body;

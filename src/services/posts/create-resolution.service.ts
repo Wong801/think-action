@@ -56,6 +56,7 @@ export default class CreateResolutionService {
     const postEntity = new PostEntity({
       userId: new ObjectId(authUserId),
       categoryResolutionId: new ObjectId(),
+      categoryName: data.categoryName,
       type: 'resolutions',
       caption: data.caption,
       photo: data.photo,

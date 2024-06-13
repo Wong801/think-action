@@ -5,6 +5,7 @@ export interface PostInterface {
   _id?: string | ObjectId;
   userId: string | ObjectId;
   categoryResolutionId: string | ObjectId;
+  categoryName?: string,
   type: 'resolutions' | 'weeklyGoals' | 'completeGoals';
   caption: string;
   photo?: Array<string>;
@@ -28,6 +29,7 @@ export class PostEntity {
       _id: post._id,
       userId: post.userId,
       categoryResolutionId: post.categoryResolutionId,
+      categoryName: post.categoryName || '',
       type: post.type,
       caption: post.caption,
       photo: post.photo,

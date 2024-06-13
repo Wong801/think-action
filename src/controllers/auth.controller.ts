@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express';
+import { CookieOptions, NextFunction, Request, Response } from 'express';
 import { UserRepository } from '../repositories/user.repository';
 import { ResponseError } from '../middleware/error.middleware';
 import bcrypt from 'bcrypt';
@@ -40,9 +40,10 @@ export default class AuthController {
         expiresIn: process.env.JWT_EXPIRES,
       });
 
-      const cookieOptions = {
-        expiresIn: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+      const cookieOptions: CookieOptions = {
+        expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
         httpOnly: true,
+        domain: '.wong801.my.id'
       };
 
       return res.cookie('jwt-token', token, cookieOptions).status(200).json({
